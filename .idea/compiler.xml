@@ -6,15 +6,34 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="Booking-Service" />
-        <module name="Review-Service" />
-        <module name="Search-Service" />
-        <module name="Payment-Service" />
-        <module name="Hotel-Service" />
-        <module name="Notification-Service" />
+        <module name="Report-Service" />
         <module name="HotelCloudGateway" />
+        <module name="Search-Service" />
+        <module name="Task-Service" />
+      </profile>
+      <profile name="Annotation profile for Payment-Service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
+        </processorPath>
+        <module name="Payment-Service" />
+      </profile>
+      <profile name="Annotation profile for User-Service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
+        </processorPath>
+        <module name="Booking-Service" />
+        <module name="Notification-Service" />
         <module name="Room-Service" />
+        <module name="Review-Service" />
         <module name="User-Service" />
+        <module name="Hotel-Service" />
       </profile>
     </annotationProcessing>
   </component>
@@ -25,9 +44,11 @@
       <module name="HotelCloudGateway" options="-parameters" />
       <module name="Notification-Service" options="-parameters" />
       <module name="Payment-Service" options="-parameters" />
+      <module name="Report-Service" options="-parameters" />
       <module name="Review-Service" options="-parameters" />
       <module name="Room-Service" options="-parameters" />
       <module name="Search-Service" options="-parameters" />
+      <module name="Task-Service" options="-parameters" />
       <module name="User-Service" options="-parameters" />
     </option>
   </component>

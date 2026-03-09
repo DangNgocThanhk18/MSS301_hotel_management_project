@@ -13,6 +13,8 @@
         <option value="$PROJECT_DIR$/Payment-Service/pom.xml" />
         <option value="$PROJECT_DIR$/HotelCloudGateway/pom.xml" />
         <option value="$PROJECT_DIR$/Notification-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/Report-Service/pom.xml" />
+        <option value="$PROJECT_DIR$/Task-Service/pom.xml" />
       </list>
     </option>
   </component>

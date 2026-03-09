@@ -6,9 +6,11 @@
     <file url="file://$PROJECT_DIR$/HotelCloudGateway/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Notification-Service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Payment-Service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Report-Service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Review-Service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Room-Service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/Search-Service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/Task-Service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/User-Service/src/main/java" charset="UTF-8" />
   </component>
 </project>
