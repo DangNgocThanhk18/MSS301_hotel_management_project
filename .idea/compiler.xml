@@ -6,20 +6,13 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="Report-Service" />
-        <module name="HotelCloudGateway" />
+        <module name="Search-Service (1)" />
         <module name="Search-Service" />
         <module name="Task-Service" />
-      </profile>
-      <profile name="Annotation profile for Payment-Service" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <processorPath useClasspath="false">
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
-          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
-        </processorPath>
-        <module name="Payment-Service" />
+        <module name="Report-Service" />
+        <module name="HotelCloudGateway" />
+        <module name="Search-Service (2)" />
+        <module name="Room-Service" />
       </profile>
       <profile name="Annotation profile for User-Service" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -29,11 +22,11 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
         </processorPath>
         <module name="Booking-Service" />
-        <module name="Notification-Service" />
-        <module name="Room-Service" />
         <module name="Review-Service" />
-        <module name="User-Service" />
+        <module name="Payment-Service" />
         <module name="Hotel-Service" />
+        <module name="Notification-Service" />
+        <module name="User-Service" />
       </profile>
     </annotationProcessing>
   </component>
@@ -48,6 +41,8 @@
       <module name="Review-Service" options="-parameters" />
       <module name="Room-Service" options="-parameters" />
       <module name="Search-Service" options="-parameters" />
+      <module name="Search-Service (1)" options="-parameters" />
+      <module name="Search-Service (2)" options="-parameters" />
       <module name="Task-Service" options="-parameters" />
       <module name="User-Service" options="-parameters" />
     </option>
