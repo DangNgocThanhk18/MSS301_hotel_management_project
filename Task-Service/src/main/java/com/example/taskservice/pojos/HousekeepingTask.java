@@ -1,5 +1,6 @@
 package com.example.taskservice.pojos;
 
+import com.example.taskservice.enums.TaskStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -20,6 +21,6 @@ public class HousekeepingTask {
 
     private LocalDate taskDate;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private TaskStatus status = TaskStatus.PENDING;
 }
-

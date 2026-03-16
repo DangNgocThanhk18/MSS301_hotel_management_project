@@ -1,5 +1,6 @@
 package com.mss301.reviewservice.pojos;
 
+import com.mss301.reviewservice.enums.ReviewStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -22,6 +23,8 @@ public class Review {
 
     private String comment;
 
+    @Enumerated(EnumType.STRING)
+    private ReviewStatus status = ReviewStatus.PENDING;
+
     private LocalDateTime createdAt;
 }
-

@@ -1,5 +1,6 @@
 package com.mss301.roomservice.pojos;
 
+import com.mss301.roomservice.enums.RoomStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -20,6 +21,6 @@ public class Room {
 
     private Integer floor;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private RoomStatus status = RoomStatus.AVAILABLE;
 }
-

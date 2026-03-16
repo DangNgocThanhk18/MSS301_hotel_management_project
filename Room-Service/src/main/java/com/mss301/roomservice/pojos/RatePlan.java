@@ -1,5 +1,6 @@
 package com.mss301.roomservice.pojos;
 
+import com.mss301.roomservice.enums.RateType;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -18,6 +19,6 @@ public class RatePlan {
 
     private String name;
 
-    private String rateType;
+    @Enumerated(EnumType.STRING)
+    private RateType rateType;
 }
-

@@ -1,7 +1,11 @@
 package com.mss301.userservice.pojos;
+
+import com.mss301.userservice.enums.DocumentType;
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "guest")
 @Data
@@ -19,10 +23,10 @@ public class Guest {
 
     private String nationality;
 
-    private String documentType;
+    @Enumerated(EnumType.STRING)
+    private DocumentType documentType;
 
     private String documentNumber;
 
     private LocalDateTime createdAt;
 }
-

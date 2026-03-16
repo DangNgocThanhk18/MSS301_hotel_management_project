@@ -1,5 +1,6 @@
 package com.mss301.bookingservice.pojos;
 
+import com.mss301.bookingservice.enums.ReservationRoomStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -21,4 +22,7 @@ public class ReservationRoom {
     private Long roomTypeId;
 
     private BigDecimal nightlyPrice;
+
+    @Enumerated(EnumType.STRING)
+    private ReservationRoomStatus status;
 }

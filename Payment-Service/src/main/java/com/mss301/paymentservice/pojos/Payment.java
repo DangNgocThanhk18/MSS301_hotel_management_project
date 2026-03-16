@@ -1,5 +1,7 @@
 package com.mss301.paymentservice.pojos;
 
+import com.mss301.paymentservice.enums.PaymentMethod;
+import com.mss301.paymentservice.enums.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -20,8 +22,9 @@ public class Payment {
 
     private String currency;
 
-    private String paymentMethod;
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus status;
 }
-

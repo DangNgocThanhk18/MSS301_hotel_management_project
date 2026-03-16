@@ -1,41 +1,35 @@
-package com.mss301.roomservice.pojos;
+package com.mss301.hotelservice.pojos;
 
-import com.mss301.roomservice.enums.Status;
+import com.mss301.hotelservice.enums.Status;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "room_type")
+@Table(name = "service")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RoomType {
+public class HotelService {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "hotel_id")
+    @Column(name = "hotel_id", nullable = false)
     private Long hotelId;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String code;
 
+    @Column(nullable = false)
     private String name;
 
-    @Column(name = "image_url")
-    private String imageUrl;
-
-    private Integer capacity;
-
-    @Column(name = "bed_info")
-    private String bedInfo;
-
-    @Column(name = "base_price")
-    private BigDecimal basePrice;
+    @Column(nullable = false)
+    private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
     private Status status = Status.ACTIVE;

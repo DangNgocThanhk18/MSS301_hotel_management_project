@@ -1,5 +1,7 @@
 package com.mss301.notificationservice.pojos;
 
+import com.mss301.notificationservice.enums.NotificationStatus;
+import com.mss301.notificationservice.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -20,10 +22,11 @@ public class Notification {
 
     private String message;
 
-    private String type;
+    @Enumerated(EnumType.STRING)
+    private NotificationType type;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private NotificationStatus status = NotificationStatus.UNREAD;
 
     private LocalDateTime createdAt;
 }
-

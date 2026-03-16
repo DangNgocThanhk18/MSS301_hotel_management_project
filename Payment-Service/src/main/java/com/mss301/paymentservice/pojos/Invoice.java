@@ -1,5 +1,6 @@
 package com.mss301.paymentservice.pojos;
 
+import com.mss301.paymentservice.enums.InvoiceStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -22,6 +23,6 @@ public class Invoice {
 
     private BigDecimal tax;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private InvoiceStatus status;
 }
-

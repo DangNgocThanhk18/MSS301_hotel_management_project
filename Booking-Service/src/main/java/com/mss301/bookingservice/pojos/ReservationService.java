@@ -1,5 +1,6 @@
 package com.mss301.bookingservice.pojos;
 
+import com.mss301.bookingservice.enums.ReservationServiceStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -21,5 +22,7 @@ public class ReservationService {
     private Integer quantity;
 
     private BigDecimal totalPrice;
-}
 
+    @Enumerated(EnumType.STRING)
+    private ReservationServiceStatus status;
+}

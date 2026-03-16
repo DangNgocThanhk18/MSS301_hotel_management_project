@@ -1,7 +1,10 @@
 package com.mss301.userservice.pojos;
 
+import com.mss301.userservice.enums.AccountStatus;
+import com.mss301.userservice.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -23,9 +26,11 @@ public class UserAccount {
 
     private String phone;
 
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
 
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private AccountStatus status = AccountStatus.ACTIVE;
 
     private LocalDateTime createdAt;
 }

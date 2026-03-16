@@ -1,5 +1,6 @@
 package com.mss301.hotelservice.pojos;
 
+import com.mss301.hotelservice.enums.Status;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -27,5 +28,7 @@ public class Hotel {
     private String phone;
 
     private String email;
-}
 
+    @Enumerated(EnumType.STRING)
+    private Status status = Status.ACTIVE;
+}
