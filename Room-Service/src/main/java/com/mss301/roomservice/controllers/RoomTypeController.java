@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/room-type")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000") // Cho phép React app kết nối
+@CrossOrigin(origins = "http://localhost:3000")
 public class RoomTypeController {
 
     private final RoomTypeService roomTypeService;

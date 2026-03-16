@@ -8,7 +8,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class HotelServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(HotelServiceApplication.class, args);
-        System.out.println("🚀 Hotel Service is running on port 8084");
+        System.out.println("🚀 Hotel Service is running on port 8082");
         System.out.println("📝 Service API endpoint: http://localhost:8084/api/services");
     }
 }

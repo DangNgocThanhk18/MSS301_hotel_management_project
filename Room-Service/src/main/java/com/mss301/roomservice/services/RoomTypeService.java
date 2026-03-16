@@ -1,4 +1,3 @@
-// src/main/java/com/mss301/roomservice/services/RoomTypeService.java
 package com.mss301.roomservice.services;
 
 import com.mss301.roomservice.dtos.RoomTypeRequestDTO;

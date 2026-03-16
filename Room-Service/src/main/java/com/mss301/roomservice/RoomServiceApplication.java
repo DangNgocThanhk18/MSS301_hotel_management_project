@@ -1,4 +1,3 @@
-// src/main/java/com/mss301/roomservice/RoomServiceApplication.java
 package com.mss301.roomservice;
 
 import org.springframework.boot.SpringApplication;

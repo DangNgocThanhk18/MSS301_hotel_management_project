@@ -3,6 +3,7 @@ package com.mss301.userservice.controllers;
 import com.mss301.userservice.dto.AuthResponse;
 import com.mss301.userservice.dto.LoginRequest;
 import com.mss301.userservice.dto.RegisterRequest;
+import com.mss301.userservice.enums.UserRole;
 import com.mss301.userservice.pojos.UserAccount;
 import com.mss301.userservice.repository.UserAccountRepository;
 import com.mss301.userservice.security.JwtUtil;
@@ -49,7 +50,7 @@ public class AuthController {
 
         newUser.setPasswordHash(passwordEncoder.encode(request.getPassword()));
 
-        newUser.setRole("ROLE_CUSTOMER");
+        newUser.setRole(UserRole.CUSTOMER);
 
         userAccountRepository.save(newUser);
 

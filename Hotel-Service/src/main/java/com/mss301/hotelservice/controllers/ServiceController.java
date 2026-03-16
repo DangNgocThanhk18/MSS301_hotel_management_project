@@ -1,4 +1,3 @@
-// src/main/java/com/mss301/hotelservice/controllers/ServiceController.java
 package com.mss301.hotelservice.controllers;
 
 import com.mss301.hotelservice.dtos.ServiceRequestDTO;
@@ -15,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/services")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000") // Cho phép React app kết nối
+@CrossOrigin(origins = "http://localhost:3000")
 public class ServiceController {
 
     private final ServiceService serviceService;

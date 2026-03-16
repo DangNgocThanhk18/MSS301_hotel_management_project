@@ -2,14 +2,18 @@ package com.mss301.bookingservice.pojos;
 
 import com.mss301.bookingservice.enums.ReservationStatus;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.Date;
 
 @Entity
 @Table(name = "reservation")
-@Data
+@Data // Đã bao gồm Getter, Setter, toString...
+@NoArgsConstructor
+@AllArgsConstructor
 public class Reservation {
 
     @Id
@@ -18,13 +22,29 @@ public class Reservation {
 
     private String reservationCode;
 
-    private Long guestId;
+    private Long customerId;
 
     private Long hotelId;
 
-    private LocalDate arrivalDate;
 
-    private LocalDate departureDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date expectedCheckInDate;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date expectedCheckOutDate;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date actualCheckInDate; // Giờ check-in thực tế do Lễ tân bấm
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date actualCheckOutDate; // Giờ check-out thực tế do Lễ tân bấm
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate;
+
+
+    @Column(length = 500)
+    private String note;
 
     private BigDecimal totalAmount;
 

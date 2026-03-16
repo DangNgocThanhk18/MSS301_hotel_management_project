@@ -19,7 +19,6 @@ public class RoomTypeServiceImpl implements RoomTypeService {
 
     @Override
     public RoomTypeResponseDTO createRoomType(RoomTypeRequestDTO request) {
-        // Kiểm tra code đã tồn tại chưa
         if (roomTypeRepository.existsByCode(request.getCode())) {
             throw new RuntimeException("Room type with code " + request.getCode() + " already exists");
         }
