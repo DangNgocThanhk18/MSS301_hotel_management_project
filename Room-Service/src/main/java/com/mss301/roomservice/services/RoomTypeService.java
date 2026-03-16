@@ -11,4 +11,5 @@ public interface RoomTypeService {
     List<RoomTypeResponseDTO> getAllRoomTypes();
     List<RoomTypeResponseDTO> getRoomTypesByHotelId(Long hotelId);
     void deleteRoomType(Long id);
+    void updateAmenities(Long roomTypeId, List<Long> amenityIds);
 }

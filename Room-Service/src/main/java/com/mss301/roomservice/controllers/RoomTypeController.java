@@ -1,5 +1,6 @@
 package com.mss301.roomservice.controllers;
 
+import com.mss301.roomservice.dtos.AmenityRequestDTO;
 import com.mss301.roomservice.dtos.RoomTypeRequestDTO;
 import com.mss301.roomservice.dtos.RoomTypeResponseDTO;
 import com.mss301.roomservice.services.RoomTypeService;
@@ -53,5 +54,13 @@ public class RoomTypeController {
     public ResponseEntity<Void> deleteRoomType(@PathVariable Long id) {
         roomTypeService.deleteRoomType(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/amenities")
+    public ResponseEntity<Void> updateRoomTypeAmenities(
+            @PathVariable Long id,
+            @RequestBody AmenityRequestDTO request) {
+        roomTypeService.updateAmenities(id, request.getAmenityIds());
+        return ResponseEntity.ok().build();
     }
 }

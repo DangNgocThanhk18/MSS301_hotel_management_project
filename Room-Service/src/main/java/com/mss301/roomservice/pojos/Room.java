@@ -13,13 +13,20 @@ public class Room {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "hotel_id")
     private Long hotelId;
 
+    @Column(name = "room_number")
     private String roomNumber;
 
-    private Long roomTypeId;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "room_type_id")
+    private RoomType roomType;
 
     private Integer floor;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
     @Enumerated(EnumType.STRING)
     private RoomStatus status = RoomStatus.AVAILABLE;

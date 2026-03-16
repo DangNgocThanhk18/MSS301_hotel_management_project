@@ -15,12 +15,15 @@ public class RoomRate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long roomTypeId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "room_type_id")
+    private RoomType roomType;
 
-    private Long ratePlanId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "rate_plan_id")
+    private RatePlan ratePlan;
 
     private LocalDate date;
 
     private BigDecimal price;
 }
-

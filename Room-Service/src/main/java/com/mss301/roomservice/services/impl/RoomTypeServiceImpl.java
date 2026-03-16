@@ -3,7 +3,9 @@ package com.mss301.roomservice.services.impl;
 import com.mss301.roomservice.dtos.RoomTypeRequestDTO;
 import com.mss301.roomservice.dtos.RoomTypeResponseDTO;
 import com.mss301.roomservice.exception.ResourceNotFoundException;
+import com.mss301.roomservice.pojos.Amenity;
 import com.mss301.roomservice.pojos.RoomType;
+import com.mss301.roomservice.repositories.AmenityRepository;
 import com.mss301.roomservice.repositories.RoomTypeRepository;
 import com.mss301.roomservice.services.RoomTypeService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 public class RoomTypeServiceImpl implements RoomTypeService {
 
     private final RoomTypeRepository roomTypeRepository;
+    private final AmenityRepository amenityRepository;
 
     @Override
     public RoomTypeResponseDTO createRoomType(RoomTypeRequestDTO request) {
@@ -41,7 +44,6 @@ public class RoomTypeServiceImpl implements RoomTypeService {
         RoomType roomType = roomTypeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Room type not found with id: " + id));
 
-        // Kiểm tra code nếu thay đổi
         if (!roomType.getCode().equals(request.getCode()) &&
                 roomTypeRepository.existsByCode(request.getCode())) {
             throw new RuntimeException("Room type with code " + request.getCode() + " already exists");
@@ -99,4 +101,13 @@ public class RoomTypeServiceImpl implements RoomTypeService {
                 roomType.getBasePrice()
         );
     }
+    @Override
+    public void updateAmenities(Long roomTypeId, List<Long> amenityIds) {
+        RoomType roomType = roomTypeRepository.findById(roomTypeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy RoomType với ID: " + roomTypeId));
+
+         List<Amenity> amenities = amenityRepository.findAllById(amenityIds);
+         roomType.setAmenities(amenities);
+         roomTypeRepository.save(roomType);
+ }
 }

@@ -1,6 +1,7 @@
 package com.mss301.userservice.security;
 
 import com.mss301.userservice.pojos.UserAccount;
+import com.mss301.userservice.enums.AccountStatus;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,9 +19,12 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Ánh xạ Role từ DB sang Spring Security (VD: "ROLE_ADMIN", "ROLE_CUSTOMER")
 
-        return Collections.singleton(new SimpleGrantedAuthority(userAccount.getRole()));
+        String roleName = userAccount.getRole().name();
+        if (!roleName.startsWith("ROLE_")) {
+            roleName = "ROLE_" + roleName;
+        }
+        return Collections.singleton(new SimpleGrantedAuthority(roleName));
     }
 
     @Override
@@ -40,7 +44,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return userAccount.getStatus() != AccountStatus.INACTIVE;
     }
 
     @Override
@@ -50,7 +54,10 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
+        return userAccount.getStatus() == AccountStatus.ACTIVE;
+    }
 
-        return true;
+    public UserAccount getUserAccount() {
+        return userAccount;
     }
 }
