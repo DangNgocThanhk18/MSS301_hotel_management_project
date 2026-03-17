@@ -1,24 +1,15 @@
-package com.mss301.roomservice.pojos;
+package com.mss301.roomservice.dtos;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
-@Table(name = "amenity")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Amenity {
-
-    @Id
+public class AmenityResponseDTO {
     private Long id;
-
-    @Column(name = "hotel_id")
     private Long hotelId;
-
     private String name;
-
     private String description;
 }

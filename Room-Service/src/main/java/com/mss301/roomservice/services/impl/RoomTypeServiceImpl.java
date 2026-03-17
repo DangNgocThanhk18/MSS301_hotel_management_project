@@ -1,5 +1,7 @@
 package com.mss301.roomservice.services.impl;
 
+import com.mss301.roomservice.clients.HotelAmenityClient;
+import com.mss301.roomservice.dtos.AmenityResponseDTO;
 import com.mss301.roomservice.dtos.RoomTypeRequestDTO;
 import com.mss301.roomservice.dtos.RoomTypeResponseDTO;
 import com.mss301.roomservice.exception.ResourceNotFoundException;
@@ -8,9 +10,13 @@ import com.mss301.roomservice.pojos.RoomType;
 import com.mss301.roomservice.repositories.AmenityRepository;
 import com.mss301.roomservice.repositories.RoomTypeRepository;
 import com.mss301.roomservice.services.RoomTypeService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,6 +25,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
 
     private final RoomTypeRepository roomTypeRepository;
     private final AmenityRepository amenityRepository;
+    private final HotelAmenityClient hotelAmenityClient;
 
     @Override
     public RoomTypeResponseDTO createRoomType(RoomTypeRequestDTO request) {
@@ -93,17 +100,18 @@ public class RoomTypeServiceImpl implements RoomTypeService {
     }
 
     private RoomTypeResponseDTO convertToDTO(RoomType roomType) {
-        return new RoomTypeResponseDTO(
-                roomType.getId(),
-                roomType.getHotelId(),
-                roomType.getCode(),
-                roomType.getName(),
-                roomType.getImageUrl(),
-                roomType.getCapacity(),
-                roomType.getBedInfo(),
-                roomType.getBasePrice(),
-                roomType.getDescription()
-        );
+        RoomTypeResponseDTO dto = new RoomTypeResponseDTO();
+        dto.setId(roomType.getId());
+        dto.setHotelId(roomType.getHotelId());
+        dto.setCode(roomType.getCode());
+        dto.setName(roomType.getName());
+        dto.setImageUrl(roomType.getImageUrl());
+        dto.setCapacity(roomType.getCapacity());
+        dto.setBedInfo(roomType.getBedInfo());
+        dto.setBasePrice(roomType.getBasePrice());
+        dto.setDescription(roomType.getDescription());
+        dto.setAmenities(roomType.getAmenities());
+        return dto;
     }
 
     @Override
@@ -111,8 +119,38 @@ public class RoomTypeServiceImpl implements RoomTypeService {
         RoomType roomType = roomTypeRepository.findById(roomTypeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy RoomType với ID: " + roomTypeId));
 
-        List<Amenity> amenities = amenityRepository.findAllById(amenityIds);
-        roomType.setAmenities(amenities);
+        List<Amenity> amenityList = amenityRepository.findAllById(amenityIds);
+        roomType.setAmenities(new HashSet<>(amenityList));
+        roomTypeRepository.save(roomType);
+    }
+
+    @Override
+    @Transactional
+    public void updateRoomTypeAmenities(Long roomTypeId, List<Long> amenityIds) {
+        // 1. Tìm RoomType hiện có
+        RoomType roomType = roomTypeRepository.findById(roomTypeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy loại phòng ID: " + roomTypeId));
+
+        Set<Amenity> updatedAmenities = new HashSet<>();
+
+        for (Long id : amenityIds) {
+            // 2. Kiểm tra xem Amenity này đã tồn tại trong DB của Room-Service chưa
+            Amenity amenity = amenityRepository.findById(id).orElseGet(() -> {
+
+                AmenityResponseDTO externalData = hotelAmenityClient.getAmenityById(id);
+
+                Amenity newAmenity = new Amenity();
+                newAmenity.setId(externalData.getId());
+                newAmenity.setName(externalData.getName());
+                newAmenity.setHotelId(externalData.getHotelId());
+                return amenityRepository.save(newAmenity);
+            });
+            updatedAmenities.add(amenity);
+        }
+
+        // 5. Cập nhật danh sách tiện ích và lưu lại
+        roomType.getAmenities().clear();
+        roomType.getAmenities().addAll(updatedAmenities);
         roomTypeRepository.save(roomType);
     }
 }

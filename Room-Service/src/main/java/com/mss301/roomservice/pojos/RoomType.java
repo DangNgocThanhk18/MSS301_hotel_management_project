@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "room_type")
@@ -50,5 +51,5 @@ public class RoomType {
             joinColumns = @JoinColumn(name = "room_type_id"),
             inverseJoinColumns = @JoinColumn(name = "amenity_id")
     )
-    private List<Amenity> amenities;
+    private Set<Amenity> amenities = new java.util.HashSet<>();
 }

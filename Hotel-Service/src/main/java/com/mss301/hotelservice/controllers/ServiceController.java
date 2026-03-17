@@ -18,10 +18,6 @@ public class ServiceController {
 
     private final ServiceService serviceService;
 
-<<<<<<< Updated upstream
-=======
-    // GET /api/service - Lấy tất cả service
->>>>>>> Stashed changes
     @GetMapping
     public ResponseEntity<List<ServiceResponseDTO>> getAllServices() {
         List<ServiceResponseDTO> services = serviceService.getAllServices();

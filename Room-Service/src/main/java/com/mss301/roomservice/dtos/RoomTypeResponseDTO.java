@@ -1,9 +1,11 @@
 package com.mss301.roomservice.dtos;
 
+import com.mss301.roomservice.pojos.Amenity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -18,4 +20,5 @@ public class RoomTypeResponseDTO {
     private String bedInfo;
     private BigDecimal basePrice;
     private String description;
+    private Set<Amenity> amenities;
 }

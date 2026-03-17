@@ -3,11 +3,10 @@ package com.mss301.reviewservice.pojos;
 import com.mss301.reviewservice.enums.ReviewStatus;
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "review")
+@Table(name = "reviews")
 @Data
 public class Review {
 
@@ -15,16 +14,16 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long hotelId;
-
-    private Long guestId;
-
+    private Long bookingId;
+    private Long customerId;
+    private Long roomTypeId;
     private Integer rating;
 
+    @Column(columnDefinition = "TEXT")
     private String comment;
 
     @Enumerated(EnumType.STRING)
-    private ReviewStatus status = ReviewStatus.PENDING;
+    private ReviewStatus status = ReviewStatus.PUBLISHED;
 
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 }
