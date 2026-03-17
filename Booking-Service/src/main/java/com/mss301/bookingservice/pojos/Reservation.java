@@ -11,7 +11,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "reservation")
-@Data // Đã bao gồm Getter, Setter, toString...
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Reservation {

@@ -67,7 +67,6 @@ public class AuthController {
             newUser.setRole(UserRole.CUSTOMER);
         }
 
-        // 4. Thiết lập trạng thái và thời gian tạo
         newUser.setStatus(AccountStatus.ACTIVE);
         newUser.setCreatedAt(LocalDateTime.now());
 
@@ -79,7 +78,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
-            // Spring Security sẽ tự động gọi CustomUserDetailsService ở trên
+
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
             );
@@ -87,15 +86,12 @@ public class AuthController {
             return ResponseEntity.status(401).body(new AuthResponse(null, "Sai tài khoản hoặc mật khẩu!", null, null, null, null, null));
         }
 
-        // Lấy thông tin chi tiết người dùng sau khi xác thực thành công
         final UserDetails userDetails = userDetailsService.loadUserByUsername(request.getUsername());
         final String jwt = jwtUtil.generateToken(userDetails);
 
-        // Ép kiểu về CustomUserDetails để lấy đối tượng UserAccount thực tế
         CustomUserDetails customUserDetails = (CustomUserDetails) userDetails;
         UserAccount user = customUserDetails.getUserAccount();
 
-        // Trả về đầy đủ thông tin để React lưu vào localStorage
         return ResponseEntity.ok(new AuthResponse(
                 jwt,
                 "Đăng nhập thành công",
