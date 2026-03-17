@@ -34,6 +34,7 @@ public class RoomTypeServiceImpl implements RoomTypeService {
         roomType.setCapacity(request.getCapacity());
         roomType.setBedInfo(request.getBedInfo());
         roomType.setBasePrice(request.getBasePrice());
+        roomType.setDescription(request.getDescription());
 
         RoomType saved = roomTypeRepository.save(roomType);
         return convertToDTO(saved);
@@ -56,6 +57,8 @@ public class RoomTypeServiceImpl implements RoomTypeService {
         roomType.setCapacity(request.getCapacity());
         roomType.setBedInfo(request.getBedInfo());
         roomType.setBasePrice(request.getBasePrice());
+
+        roomType.setDescription(request.getDescription());
 
         RoomType updated = roomTypeRepository.save(roomType);
         return convertToDTO(updated);
@@ -98,16 +101,18 @@ public class RoomTypeServiceImpl implements RoomTypeService {
                 roomType.getImageUrl(),
                 roomType.getCapacity(),
                 roomType.getBedInfo(),
-                roomType.getBasePrice()
+                roomType.getBasePrice(),
+                roomType.getDescription()
         );
     }
+
     @Override
     public void updateAmenities(Long roomTypeId, List<Long> amenityIds) {
         RoomType roomType = roomTypeRepository.findById(roomTypeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy RoomType với ID: " + roomTypeId));
 
-         List<Amenity> amenities = amenityRepository.findAllById(amenityIds);
-         roomType.setAmenities(amenities);
-         roomTypeRepository.save(roomType);
- }
+        List<Amenity> amenities = amenityRepository.findAllById(amenityIds);
+        roomType.setAmenities(amenities);
+        roomTypeRepository.save(roomType);
+    }
 }

@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface HousekeepingTaskRepository extends JpaRepository<HousekeepingTask, Long> {
     List<HousekeepingTask> findByStatus(TaskStatus status);
+    List<HousekeepingTask> findByAssignedTo(Long assignedTo);
+
 }

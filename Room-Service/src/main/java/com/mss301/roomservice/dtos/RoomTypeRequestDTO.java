@@ -16,4 +16,5 @@ public class RoomTypeRequestDTO {
     private Integer capacity;
     private String bedInfo;
     private BigDecimal basePrice;
+    private String description;
 }

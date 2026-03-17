@@ -27,7 +27,7 @@ public class RoomType {
 
     private String name;
 
-    @Column(name = "image_url")
+    @Column(name = "image_url" , columnDefinition = "LONGTEXT")
     private String imageUrl;
 
     private Integer capacity;
