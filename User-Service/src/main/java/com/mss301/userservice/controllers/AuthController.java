@@ -19,6 +19,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+<<<<<<< Updated upstream
+=======
+import java.util.HashMap;
+>>>>>>> Stashed changes
 import java.util.Map;
 
 @RestController
@@ -107,6 +111,7 @@ public class AuthController {
         ));
     }
 
+<<<<<<< Updated upstream
     @PutMapping("/user/profile")
     public ResponseEntity<?> updateProfile(@RequestBody Map<String, String> request) {
         String email = request.get("email");
@@ -140,5 +145,35 @@ public class AuthController {
                     return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));
                 })
                 .orElse(ResponseEntity.status(404).body(Map.of("message", "Người dùng không tồn tại")));
+=======
+    @GetMapping("/user-info")
+    public ResponseEntity<?> getUserInfo(@RequestHeader("Authorization") String token) {
+        try {
+            // Loại bỏ "Bearer " prefix
+            String jwtToken = token.substring(7);
+            String username = jwtUtil.extractUsername(jwtToken);
+
+            UserAccount user = userAccountRepository.findByUsername(username)
+                    .orElse(null);
+
+            if (user == null) {
+                return ResponseEntity.status(404).body("User not found");
+            }
+
+            // Tạo response DTO
+            Map<String, Object> userInfo = new HashMap<>();
+            userInfo.put("id", user.getId());
+            userInfo.put("email", user.getEmail());
+            userInfo.put("fullName", user.getFullName());
+            userInfo.put("phone", user.getPhone());
+            userInfo.put("username", user.getUsername());
+            userInfo.put("role", user.getRole());
+
+            return ResponseEntity.ok(userInfo);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(401).body("Invalid token");
+        }
+>>>>>>> Stashed changes
     }
 }

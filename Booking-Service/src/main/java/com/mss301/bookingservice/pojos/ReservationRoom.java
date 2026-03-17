@@ -1,3 +1,4 @@
+// src/main/java/com/mss301/bookingservice/pojos/ReservationRoom.java
 package com.mss301.bookingservice.pojos;
 
 import com.mss301.bookingservice.enums.ReservationRoomStatus;
@@ -23,12 +24,16 @@ public class ReservationRoom {
     @JoinColumn(name = "reservation_id")
     private Reservation reservation;
 
-    private Long roomId;
+    private Long roomId; // ID phòng từ RoomService
 
-    private Long roomTypeId;
+    private Long roomTypeId; // ID loại phòng từ RoomService
 
-    private BigDecimal nightlyPrice;
+    private BigDecimal nightlyPrice; // Giá 1 đêm
 
     @Enumerated(EnumType.STRING)
     private ReservationRoomStatus status;
+
+    private Integer adultCount; // Số người lớn trong phòng
+
+    private Integer childCount; // Số trẻ em trong phòng
 }

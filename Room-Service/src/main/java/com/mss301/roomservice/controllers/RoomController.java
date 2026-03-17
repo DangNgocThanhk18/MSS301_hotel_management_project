@@ -4,10 +4,12 @@ import com.mss301.roomservice.dtos.RoomRequestDTO;
 import com.mss301.roomservice.pojos.Room;
 import com.mss301.roomservice.services.RoomService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -57,6 +59,23 @@ public class RoomController {
     public ResponseEntity<Void> updateRoomStatus(@PathVariable("id") Long roomId, @RequestParam("status") String status) {
         Room room = roomService.getRoomById(roomId);
         room.setStatus(com.mss301.roomservice.enums.RoomStatus.valueOf(status.toUpperCase()));
+        roomService.updateRoom(roomId, null); // Cần implement method update status
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/available")
+    public ResponseEntity<List<Long>> findAvailableRooms(
+            @RequestParam("roomTypeId") Long roomTypeId,
+            @RequestParam("checkIn") @DateTimeFormat(pattern = "yyyy-MM-dd") Date checkIn,
+            @RequestParam("checkOut") @DateTimeFormat(pattern = "yyyy-MM-dd") Date checkOut,
+            @RequestParam(value = "count", defaultValue = "1") int count) {
+
+        try {
+            List<Long> availableRoomIds = roomService.findAvailableRooms(
+                    roomTypeId, checkIn, checkOut, count);
+            return ResponseEntity.ok(availableRoomIds);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

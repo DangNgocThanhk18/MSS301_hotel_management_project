@@ -18,13 +18,17 @@ public class ServiceController {
 
     private final ServiceService serviceService;
 
+<<<<<<< Updated upstream
+=======
+    // GET /api/service - Lấy tất cả service
+>>>>>>> Stashed changes
     @GetMapping
     public ResponseEntity<List<ServiceResponseDTO>> getAllServices() {
         List<ServiceResponseDTO> services = serviceService.getAllServices();
         return ResponseEntity.ok(services);
     }
 
-    // GET /api/services/{id} - Lấy service theo ID
+    // GET /api/service/{id} - Lấy service theo ID
     @GetMapping("/{id}")
     public ResponseEntity<?> getServiceById(@PathVariable Long id) {
         try {
@@ -37,7 +41,7 @@ public class ServiceController {
         }
     }
 
-    // GET /api/services/code/{code} - Lấy service theo code
+    // GET /api/service/code/{code} - Lấy service theo code
     @GetMapping("/code/{code}")
     public ResponseEntity<?> getServiceByCode(@PathVariable String code) {
         try {
@@ -50,14 +54,14 @@ public class ServiceController {
         }
     }
 
-    // GET /api/services/hotel/{hotelId} - Lấy services theo hotel ID
+    // GET /api/service/hotel/{hotelId} - Lấy service theo hotel ID
     @GetMapping("/hotel/{hotelId}")
     public ResponseEntity<List<ServiceResponseDTO>> getServicesByHotelId(@PathVariable Long hotelId) {
         List<ServiceResponseDTO> services = serviceService.getServicesByHotelId(hotelId);
         return ResponseEntity.ok(services);
     }
 
-    // POST /api/services - Tạo service mới
+    // POST /api/service - Tạo service mới
     @PostMapping
     public ResponseEntity<?> createService(@Valid @RequestBody ServiceRequestDTO serviceDTO) {
         try {
@@ -70,7 +74,7 @@ public class ServiceController {
         }
     }
 
-    // PUT /api/services/{id} - Cập nhật service
+    // PUT /api/service/{id} - Cập nhật service
     @PutMapping("/{id}")
     public ResponseEntity<?> updateService(
             @PathVariable Long id,
@@ -90,7 +94,7 @@ public class ServiceController {
         }
     }
 
-    // DELETE /api/services/{id} - Xóa service
+    // DELETE /api/service/{id} - Xóa service
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteService(@PathVariable Long id) {
         try {

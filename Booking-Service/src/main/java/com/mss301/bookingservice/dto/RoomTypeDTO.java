@@ -1,20 +1,21 @@
-// src/main/java/com/mss301/hotelservice/dto/ServiceResponseDTO.java
-package com.mss301.hotelservice.dtos;
+// src/main/java/com/mss301/bookingservice/dto/RoomTypeDTO.java
+package com.mss301.bookingservice.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ServiceResponseDTO {
+public class RoomTypeDTO {
     private Long id;
     private Long hotelId;
     private String code;
     private String name;
-    private BigDecimal price;
+    private Integer capacity;
+    private String bedInfo;
+    private BigDecimal basePrice;
+    private String description;
 }

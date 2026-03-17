@@ -1,3 +1,4 @@
+// src/main/java/com/mss301/bookingservice/pojos/Reservation.java
 package com.mss301.bookingservice.pojos;
 
 import com.mss301.bookingservice.enums.ReservationStatus;
@@ -22,10 +23,9 @@ public class Reservation {
 
     private String reservationCode;
 
-    private Long customerId;
+    private Long customerId; // ID từ UserService (có thể null nếu khách vãng lai)
 
     private Long hotelId;
-
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date expectedCheckInDate;
@@ -34,14 +34,13 @@ public class Reservation {
     private Date expectedCheckOutDate;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date actualCheckInDate; // Giờ check-in thực tế do Lễ tân bấm
+    private Date actualCheckInDate;
 
     @Temporal(TemporalType.TIMESTAMP)
-    private Date actualCheckOutDate; // Giờ check-out thực tế do Lễ tân bấm
+    private Date actualCheckOutDate;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
-
 
     @Column(length = 500)
     private String note;

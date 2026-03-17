@@ -1,4 +1,4 @@
-// src/main/java/com/mss301/hotelservice/dtos/ServiceRequestDTO.java
+// src/main/java/com/mss301/hotelservice/dto/ServiceRequestDTO.java
 package com.mss301.hotelservice.dtos;
 
 import jakarta.validation.constraints.*;

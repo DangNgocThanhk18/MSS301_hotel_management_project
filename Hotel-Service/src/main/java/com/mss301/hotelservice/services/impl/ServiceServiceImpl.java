@@ -1,4 +1,4 @@
-// src/main/java/com/mss301/hotelservice/services/impl/ServiceServiceImpl.java
+// src/main/java/com/mss301/hotelservice/service/impl/ServiceServiceImpl.java
 package com.mss301.hotelservice.services.impl;
 
 import com.mss301.hotelservice.dtos.ServiceRequestDTO;
@@ -107,7 +107,7 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     public List<ServiceResponseDTO> getAllServices() {
-        log.info("Fetching all services");
+        log.info("Fetching all service");
 
         List<HotelService> services = serviceRepository.findAll();
         return services.stream()
@@ -117,7 +117,7 @@ public class ServiceServiceImpl implements ServiceService {
 
     @Override
     public List<ServiceResponseDTO> getServicesByHotelId(Long hotelId) {
-        log.info("Fetching services for hotel id: {}", hotelId);
+        log.info("Fetching service for hotel id: {}", hotelId);
 
         List<HotelService> services = serviceRepository.findByHotelId(hotelId);
         return services.stream()
