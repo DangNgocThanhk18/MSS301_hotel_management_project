@@ -18,7 +18,6 @@ public class ServiceController {
 
     private final ServiceService serviceService;
 
-    // GET /api/services - Lấy tất cả services
     @GetMapping
     public ResponseEntity<List<ServiceResponseDTO>> getAllServices() {
         List<ServiceResponseDTO> services = serviceService.getAllServices();
