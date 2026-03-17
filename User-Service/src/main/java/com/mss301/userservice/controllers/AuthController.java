@@ -53,9 +53,12 @@ public class AuthController {
         if (userAccountRepository.existsByEmail(request.getEmail())) {
             return ResponseEntity.badRequest().body("Lỗi: Email đã được sử dụng!");
         }
+        String usernameToSave = (request.getUsername() != null && !request.getUsername().isEmpty())
+                ? request.getUsername()
+                : request.getEmail();
 
         UserAccount newUser = new UserAccount();
-        newUser.setUsername(request.getUsername());
+        newUser.setUsername(usernameToSave);
         newUser.setEmail(request.getEmail());
         newUser.setFullName(request.getFullName());
         newUser.setPhone(request.getPhoneNumber());
