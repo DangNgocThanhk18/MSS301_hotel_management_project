@@ -219,25 +219,25 @@ public class BookingController {
 
     @PutMapping("/{id}/check-in")
     public ResponseEntity<?> checkIn(@PathVariable Long id) {
+        // 1. Tìm reservation
         Optional<Reservation> resOptional = reservationRepository.findById(id);
         if (resOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
+        // 2. Cập nhật status và thời gian
         Reservation reservation = resOptional.get();
         reservation.setStatus(ReservationStatus.CONFIRMED);
         reservation.setActualCheckInDate(new Date());
 
-        // Cập nhật trạng thái các phòng
+        // 3. Cập nhật phòng
         List<ReservationRoom> rooms = reservationRoomRepository.findByReservationId(id);
         rooms.forEach(room -> room.setStatus(ReservationRoomStatus.CHECKED_IN));
         reservationRoomRepository.saveAll(rooms);
 
+        // 4. Lưu và trả về
         reservationRepository.save(reservation);
-
-        return ResponseEntity.ok(Map.of(
-                "message", "Check-in thành công cho mã đơn: " + id
-        ));
+        return ResponseEntity.ok(Map.of("message", "Check-in thành công"));
     }
 
     @PutMapping("/{id}/check-out")
@@ -293,5 +293,112 @@ public class BookingController {
     public ResponseEntity<List<Reservation>> getBookingsByCustomer(@PathVariable Long customerId) {
         return ResponseEntity.ok(reservationRepository.findByCustomerId(customerId));
     }
+// Thêm vào BookingController.java
 
+    /**
+     * Lấy danh sách reservations chờ check-in
+     * GET /api/checkin/reservations
+     */
+    @GetMapping("/checkin/reservations")
+    public ResponseEntity<?> getPendingCheckIns() {
+        log.info("Fetching pending check-in reservations");
+
+        try {
+            // Lấy reservations có status = PENDING và ngày check-in là hôm nay hoặc tương lai
+            List<Reservation> pendingReservations = reservationRepository
+                    .findByStatusAndExpectedCheckInDateGreaterThanEqual(
+                            ReservationStatus.PENDING,
+                            new Date()
+                    );
+
+            List<Map<String, Object>> result = new ArrayList<>();
+
+            for (Reservation res : pendingReservations) {
+                List<Guest> guests = guestRepository.findByReservationId(res.getId());
+                Guest mainGuest = guests.isEmpty() ? null : guests.get(0);
+
+                Map<String, Object> item = new HashMap<>();
+                item.put("id", res.getId());
+                item.put("reservationCode", res.getReservationCode());
+                item.put("guestName", mainGuest != null ? mainGuest.getFullName() : "N/A");
+                item.put("email", mainGuest != null ? mainGuest.getEmail() : "");
+                item.put("phone", mainGuest != null ? mainGuest.getPhone() : "");
+                item.put("arrivalDate", res.getExpectedCheckInDate());
+                item.put("departureDate", res.getExpectedCheckOutDate());
+                item.put("status", res.getStatus());
+
+                result.add(item);
+            }
+
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            log.error("Error fetching pending check-ins", e);
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Lỗi tải danh sách: " + e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Check-in cho reservation (có receptionistId)
+     * POST /api/checkin/reservation/{reservationId}
+     */
+    @PostMapping("/checkin/reservation/{reservationId}")
+    public ResponseEntity<?> checkInReservation(
+            @PathVariable Long reservationId,
+            @RequestParam Long receptionistId) {
+
+        log.info("Check-in reservation: {} by receptionist: {}", reservationId, receptionistId);
+
+        try {
+            // 1. Tìm reservation
+            Reservation reservation = reservationRepository.findById(reservationId)
+                    .orElseThrow(() -> new RuntimeException("Reservation not found"));
+
+            // 2. Kiểm tra trạng thái
+            if (reservation.getStatus() != ReservationStatus.PENDING) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "error", "Reservation đã được check-in hoặc hủy"
+                ));
+            }
+
+            // 3. Cập nhật reservation
+            reservation.setStatus(ReservationStatus.CONFIRMED);
+            reservation.setActualCheckInDate(new Date());
+
+            // 4. Cập nhật các phòng
+            List<ReservationRoom> rooms = reservationRoomRepository
+                    .findByReservationId(reservationId);
+
+            for (ReservationRoom room : rooms) {
+                room.setStatus(ReservationRoomStatus.CHECKED_IN);
+
+                // Cập nhật trạng thái phòng trong Room Service
+                try {
+                    roomClient.updateRoomStatus(room.getRoomId(), "OCCUPIED");
+                } catch (Exception e) {
+                    log.error("Failed to update room status in Room Service", e);
+                }
+            }
+
+            reservationRoomRepository.saveAll(rooms);
+            reservationRepository.save(reservation);
+
+            log.info("Check-in completed for reservation: {}", reservationId);
+
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Check-in thành công",
+                    "reservationId", reservationId,
+                    "receptionistId", receptionistId
+            ));
+
+        } catch (Exception e) {
+            log.error("Check-in error", e);
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Lỗi check-in: " + e.getMessage()
+            ));
+        }
+    }
 }

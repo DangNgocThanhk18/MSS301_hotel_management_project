@@ -13,7 +13,9 @@ public interface RoomClient {
 
     @GetMapping("/room-type/{id}")
     RoomTypeDTO getRoomTypeById(@PathVariable("id") Long id);
-
+    // Thêm vào RoomClient.java
+    @PutMapping("/rooms/{roomId}/status")
+    void updateRoomStatus(@PathVariable("roomId") Long roomId, @RequestParam("status") String status);
     @GetMapping("/rooms/available")
     List<Long> findAvailableRooms(
             @RequestParam("roomTypeId") Long roomTypeId,
