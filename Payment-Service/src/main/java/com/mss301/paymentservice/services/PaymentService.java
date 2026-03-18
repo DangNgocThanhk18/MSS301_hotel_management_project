@@ -187,4 +187,17 @@ public class PaymentService {
                 .paymentUrl(paymentUrl)
                 .build();
     }
+    // Thêm vào PaymentService.java
+
+    /**
+     * Lấy tổng số tiền đã thanh toán của reservation
+     */
+    public BigDecimal getTotalPaidByReservation(Long reservationId) {
+        List<Payment> payments = paymentRepository.findByReservationId(reservationId);
+
+        return payments.stream()
+                .filter(p -> p.getStatus() == PaymentStatus.COMPLETED)
+                .map(Payment::getAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
 }

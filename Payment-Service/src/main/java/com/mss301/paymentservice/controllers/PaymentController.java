@@ -3,6 +3,7 @@ package com.mss301.paymentservice.controllers;
 import com.mss301.paymentservice.dto.PaymentRequestDTO;
 import com.mss301.paymentservice.dto.PaymentResponseDTO;
 import com.mss301.paymentservice.enums.PaymentMethod;
+import com.mss301.paymentservice.enums.PaymentStatus;
 import com.mss301.paymentservice.services.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -152,5 +153,86 @@ public class PaymentController {
                 "port", 8008,
                 "timestamp", System.currentTimeMillis()
         ));
+    }
+    /**
+     * Xử lý thanh toán khi checkout
+     * POST /api/payments/process-checkout
+     */
+    @PostMapping("/process-checkout")
+    public ResponseEntity<?> processCheckoutPayment(@RequestBody Map<String, Object> request) {
+        try {
+            Long reservationId = Long.valueOf(request.get("reservationId").toString());
+            BigDecimal amount = new BigDecimal(request.get("amount").toString());
+            String paymentMethod = request.get("paymentMethod").toString();
+            String description = request.getOrDefault("description", "Thanh toán khi checkout").toString();
+
+            log.info("Processing checkout payment for reservation: {}, amount: {}, method: {}",
+                    reservationId, amount, paymentMethod);
+
+            // Tạo payment request
+            PaymentRequestDTO paymentRequest = new PaymentRequestDTO();
+            paymentRequest.setReservationId(reservationId);
+            paymentRequest.setAmount(amount);
+
+            // Chuyển đổi payment method string sang enum
+            switch (paymentMethod.toUpperCase()) {
+                case "CASH":
+                    paymentRequest.setPaymentMethod(PaymentMethod.CASH);
+                    break;
+                case "BANK_TRANSFER":
+                    paymentRequest.setPaymentMethod(PaymentMethod.BANK_TRANSFER);
+                    break;
+                case "CREDIT_CARD":
+                    paymentRequest.setPaymentMethod(PaymentMethod.CREDIT_CARD);
+                    break;
+                default:
+                    paymentRequest.setPaymentMethod(PaymentMethod.CASH);
+            }
+
+            // Tạo payment (không cần HttpServletRequest vì không phải VNPay)
+            PaymentResponseDTO response = paymentService.createPayment(paymentRequest, null);
+
+            log.info("Checkout payment created with ID: {}", response.getId());
+
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "message", "Thanh toán thành công",
+                    "paymentId", response.getId(),
+                    "amount", response.getAmount(),
+                    "reservationId", reservationId
+            ));
+
+        } catch (Exception e) {
+            log.error("Error processing checkout payment", e);
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", "Lỗi thanh toán: " + e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Tính tổng số tiền đã thanh toán của một reservation
+     * GET /api/payments/total-paid/{reservationId}
+     */
+    @GetMapping("/total-paid/{reservationId}")
+    public ResponseEntity<?> getTotalPaidByReservation(@PathVariable Long reservationId) {
+        try {
+            List<PaymentResponseDTO> payments = paymentService.getPaymentsByReservation(reservationId);
+
+            BigDecimal totalPaid = payments.stream()
+                    .filter(p -> p.getStatus() == PaymentStatus.COMPLETED)
+                    .map(PaymentResponseDTO::getAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            return ResponseEntity.ok(Map.of(
+                    "reservationId", reservationId,
+                    "totalPaid", totalPaid,
+                    "paymentCount", payments.size()
+            ));
+        } catch (Exception e) {
+            log.error("Error calculating total paid", e);
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }
