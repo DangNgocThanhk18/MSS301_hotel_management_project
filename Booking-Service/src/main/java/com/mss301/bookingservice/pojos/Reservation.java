@@ -3,9 +3,7 @@ package com.mss301.bookingservice.pojos;
 
 import com.mss301.bookingservice.enums.ReservationStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -13,18 +11,13 @@ import java.util.Date;
 @Entity
 @Table(name = "reservation")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Reservation {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String reservationCode;
-
-    private Long customerId; // ID từ UserService (có thể null nếu khách vãng lai)
-
+    private Long customerId;
     private Long hotelId;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -39,14 +32,18 @@ public class Reservation {
     @Temporal(TemporalType.TIMESTAMP)
     private Date actualCheckOutDate;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date createdDate;
-
-    @Column(length = 500)
     private String note;
 
-    private BigDecimal totalAmount;
+    private BigDecimal totalAmount;           // Số tiền sau tất cả giảm giá
+    private BigDecimal originalAmount;        // Số tiền gốc
+    private BigDecimal weekendDiscountAmount; // Số tiền giảm giá cuối tuần
+    private Boolean weekendDiscountApplied;   // Đã áp dụng giảm giá cuối tuần chưa
+    private BigDecimal discountAmount;        // Số tiền giảm từ voucher
+    private String voucherCode;               // Mã voucher đã áp dụng
 
     @Enumerated(EnumType.STRING)
     private ReservationStatus status;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate;
 }

@@ -6,14 +6,17 @@ import com.mss301.bookingservice.client.RoomClient;
 import com.mss301.bookingservice.client.TaskClient;
 import com.mss301.bookingservice.client.UserClient;
 import com.mss301.bookingservice.dto.*;
+import com.mss301.bookingservice.enums.DiscountType;
 import com.mss301.bookingservice.enums.ReservationRoomStatus;
 import com.mss301.bookingservice.enums.ReservationStatus;
 import com.mss301.bookingservice.pojos.Guest;
 import com.mss301.bookingservice.pojos.Reservation;
 import com.mss301.bookingservice.pojos.ReservationRoom;
+import com.mss301.bookingservice.pojos.Voucher;
 import com.mss301.bookingservice.repository.GuestRepository;
 import com.mss301.bookingservice.repository.ReservationRepository;
 import com.mss301.bookingservice.repository.ReservationRoomRepository;
+import com.mss301.bookingservice.repository.VoucherRepository;
 import com.mss301.bookingservice.service.RoomCalculationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +44,7 @@ public class BookingController {
     private final TaskClient taskClient;
     private final UserClient userClient;
     private final RoomCalculationService calculationService;
-
+    private final VoucherRepository voucherRepository;
     @PostMapping
     public ResponseEntity<?> createBooking(
             @RequestHeader(value = "Authorization", required = false) String token,
@@ -50,24 +53,26 @@ public class BookingController {
         log.info("Received booking request with {} rooms", request.getRooms().size());
 
         try {
-            // 1. Kiểm tra token nếu có
-            Long customerId = null;
+            // 1. Lấy customerId từ request (đã được frontend gửi lên)
+            Long customerId = request.getCustomerId();  // Lấy trực tiếp từ request
             String customerEmail = null;
             String customerName = null;
 
-            if (token != null && !token.isEmpty()) {
+            // Nếu có token và có customerId, thử lấy thông tin user để hiển thị
+            if (customerId != null && token != null && !token.isEmpty()) {
                 try {
                     UserInfoDTO user = userClient.getUserByToken("Bearer " + token);
                     if (user != null) {
-                        customerId = user.getId();
                         customerEmail = user.getEmail();
                         customerName = user.getFullName();
-                        log.info("User logged in: {} - {}", customerId, customerEmail);
+                        log.info("User info retrieved: {} - {}", customerId, customerEmail);
                     }
                 } catch (Exception e) {
-                    log.warn("Invalid token, proceeding as guest: {}", e.getMessage());
+                    log.warn("Could not fetch user info: {}", e.getMessage());
                 }
             }
+
+            log.info("Customer ID from request: {}", customerId);
 
             // 2. Lấy thông tin Room Type
             RoomTypeDTO roomType = roomClient.getRoomTypeById(request.getRoomTypeId());
@@ -102,29 +107,108 @@ public class BookingController {
                 ));
             }
 
-            // 5. Tính tổng tiền
+            // 5. Tính tổng tiền cơ bản
             long nights = (request.getExpectedCheckOutDate().getTime() -
                     request.getExpectedCheckInDate().getTime()) / (1000 * 60 * 60 * 24);
 
-            BigDecimal totalAmount = roomType.getBasePrice()
+            BigDecimal baseTotalAmount = roomType.getBasePrice()
                     .multiply(BigDecimal.valueOf(nights))
                     .multiply(BigDecimal.valueOf(request.getRooms().size()));
 
-            // 6. Tạo Reservation
+            // 6. Tính giảm giá cuối tuần
+            BigDecimal weekendDiscount = BigDecimal.ZERO;
+            BigDecimal weekendDiscountAmount = BigDecimal.ZERO;
+            boolean isWeekendBooking = false;
+
+            // Kiểm tra ngày check-in có phải cuối tuần không (Thứ 6, Thứ 7, Chủ Nhật)
+            Calendar checkInCalendar = Calendar.getInstance();
+            checkInCalendar.setTime(request.getExpectedCheckInDate());
+            int dayOfWeek = checkInCalendar.get(Calendar.DAY_OF_WEEK);
+
+            // Trong Java, Calendar: 1=Chủ Nhật, 2=Thứ 2, ..., 7=Thứ 7
+            // Cuối tuần: Thứ 6 (6), Thứ 7 (7), Chủ Nhật (1)
+            if (dayOfWeek == Calendar.FRIDAY || dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY) {
+                isWeekendBooking = true;
+                weekendDiscount = BigDecimal.valueOf(10); // 10%
+                weekendDiscountAmount = baseTotalAmount
+                        .multiply(weekendDiscount)
+                        .divide(BigDecimal.valueOf(100));
+                log.info("Weekend discount applied: {}% for check-in on day {}", weekendDiscount, dayOfWeek);
+            }
+
+            // 7. Áp dụng giảm giá cuối tuần
+            BigDecimal totalAfterWeekendDiscount = baseTotalAmount.subtract(weekendDiscountAmount);
+
+            // 8. Xử lý voucher nếu có (áp dụng sau giảm giá cuối tuần)
+            BigDecimal discountAmount = BigDecimal.ZERO;
+            BigDecimal finalAmount = totalAfterWeekendDiscount;
+            Voucher appliedVoucher = null;
+            String voucherMessage = null;
+
+            if (request.getVoucherCode() != null && !request.getVoucherCode().isEmpty()) {
+                try {
+                    appliedVoucher = voucherRepository.findByCode(request.getVoucherCode())
+                            .orElse(null);
+
+                    if (appliedVoucher != null) {
+                        // Kiểm tra voucher hợp lệ với giá trị sau giảm cuối tuần
+                        boolean isValid = validateVoucher(appliedVoucher, totalAfterWeekendDiscount);
+
+                        if (isValid) {
+                            // Tính số tiền giảm
+                            if (appliedVoucher.getDiscountType() == DiscountType.PERCENTAGE) {
+                                discountAmount = totalAfterWeekendDiscount
+                                        .multiply(BigDecimal.valueOf(appliedVoucher.getDiscountValue()))
+                                        .divide(BigDecimal.valueOf(100));
+                            } else {
+                                discountAmount = BigDecimal.valueOf(appliedVoucher.getDiscountValue());
+                            }
+
+                            finalAmount = totalAfterWeekendDiscount.subtract(discountAmount);
+
+                            // Tăng số lần sử dụng
+                            appliedVoucher.setUsedCount(appliedVoucher.getUsedCount() + 1);
+                            voucherRepository.save(appliedVoucher);
+
+                            voucherMessage = String.format("Áp dụng voucher %s: giảm %s %s",
+                                    appliedVoucher.getCode(),
+                                    appliedVoucher.getDiscountValue(),
+                                    appliedVoucher.getDiscountType() == DiscountType.PERCENTAGE ? "%" : "VNĐ");
+
+                            log.info("Voucher applied: {} - discount: {}",
+                                    appliedVoucher.getCode(), discountAmount);
+                        } else {
+                            voucherMessage = "Voucher không hợp lệ hoặc đã hết hạn";
+                        }
+                    } else {
+                        voucherMessage = "Mã voucher không tồn tại";
+                    }
+                } catch (Exception e) {
+                    log.error("Error applying voucher: {}", e.getMessage());
+                    voucherMessage = "Lỗi áp dụng voucher";
+                }
+            }
+
+            // 9. Tạo Reservation
             Reservation reservation = new Reservation();
             reservation.setReservationCode("RES-" + System.currentTimeMillis());
-            reservation.setCustomerId(customerId);
+            reservation.setCustomerId(customerId);  // Sử dụng customerId từ request
             reservation.setHotelId(request.getHotelId());
             reservation.setExpectedCheckInDate(request.getExpectedCheckInDate());
             reservation.setExpectedCheckOutDate(request.getExpectedCheckOutDate());
             reservation.setNote(request.getNote());
-            reservation.setTotalAmount(totalAmount);
-            reservation.setStatus(ReservationStatus.PENDING);
+            reservation.setTotalAmount(finalAmount);
+            reservation.setOriginalAmount(baseTotalAmount);
+            reservation.setWeekendDiscountAmount(weekendDiscountAmount);
+            reservation.setWeekendDiscountApplied(isWeekendBooking);
+            reservation.setDiscountAmount(discountAmount);
+            reservation.setVoucherCode(request.getVoucherCode());
+            reservation.setStatus(ReservationStatus.CONFIRMED);
             reservation.setCreatedDate(new Date());
 
             reservation = reservationRepository.save(reservation);
 
-            // 7. Tạo Guest (người đặt phòng)
+            // 10. Tạo Guest
             Guest guest = new Guest();
             guest.setFullName(request.getGuest().getFullName());
             guest.setEmail(request.getGuest().getEmail());
@@ -136,9 +220,9 @@ public class BookingController {
 
             guestRepository.save(guest);
 
-            // 8. Tạo các ReservationRoom
+            // 11. Tạo các ReservationRoom
             List<BookingResponseDTO.RoomAllocationDTO> allocations = new ArrayList<>();
-            List<RoomClient.RoomBookingRequest> roomBookings = new ArrayList<>(); // THÊM
+            List<RoomClient.RoomBookingRequest> roomBookings = new ArrayList<>();
 
             for (int i = 0; i < request.getRooms().size(); i++) {
                 BookingRequestDTO.RoomOccupancy occupancy = request.getRooms().get(i);
@@ -155,7 +239,6 @@ public class BookingController {
 
                 reservationRoomRepository.save(reservationRoom);
 
-                // THÊM: Chuẩn bị dữ liệu để gọi Room Service
                 RoomClient.RoomBookingRequest roomBooking = new RoomClient.RoomBookingRequest();
                 roomBooking.setReservationId(reservation.getId());
                 roomBooking.setRoomId(roomId);
@@ -173,28 +256,30 @@ public class BookingController {
                         .build());
             }
 
-// ===== THÊM: Gọi Room Service để cập nhật trạng thái phòng =====
+            // Gọi Room Service
             try {
                 for (RoomClient.RoomBookingRequest roomBooking : roomBookings) {
                     roomClient.bookRoom(roomBooking);
-                    log.info("Đã gửi thông tin đặt phòng sang Room Service: roomId={}, reservationId={}",
-                            roomBooking.getRoomId(), roomBooking.getReservationId());
+                    log.info("Đã gửi thông tin đặt phòng sang Room Service");
                 }
             } catch (Exception e) {
-                log.error("Lỗi khi gọi Room Service cập nhật trạng thái phòng: {}", e.getMessage());
-                // Vẫn tiếp tục vì booking đã thành công trong DB của mình
+                log.error("Lỗi khi gọi Room Service: {}", e.getMessage());
             }
 
-// 9. Tạo response (giữ nguyên)
-
-            // 9. Tạo response
+            // 12. Tạo response
             BookingResponseDTO response = BookingResponseDTO.builder()
                     .reservationId(reservation.getId())
                     .reservationCode(reservation.getReservationCode())
                     .message(customerId != null
                             ? "Đặt phòng thành công (Đã đăng nhập)"
                             : "Đặt phòng thành công (Khách vãng lai)")
-                    .totalAmount(totalAmount)
+                    .totalAmount(finalAmount)
+                    .originalAmount(baseTotalAmount)
+                    .weekendDiscountApplied(isWeekendBooking)
+                    .weekendDiscountAmount(weekendDiscountAmount)
+                    .discountAmount(discountAmount)
+                    .voucherCode(request.getVoucherCode())
+                    .voucherMessage(voucherMessage)
                     .requiredRooms(request.getRooms().size())
                     .totalAdults(calculationService.getTotalAdults(request.getRooms()))
                     .totalChildren(calculationService.getTotalChildren(request.getRooms()))
@@ -202,7 +287,7 @@ public class BookingController {
                     .isLoggedIn(customerId != null)
                     .customerEmail(customerEmail)
                     .customerName(customerName)
-                    .guestInfo(BookingResponseDTO.GuestBookingInfoDTO.builder()  // SỬA Ở ĐÂY
+                    .guestInfo(BookingResponseDTO.GuestBookingInfoDTO.builder()
                             .fullName(guest.getFullName())
                             .email(guest.getEmail())
                             .phone(guest.getPhone())
@@ -219,7 +304,134 @@ public class BookingController {
             ));
         }
     }
+// Thêm vào BookingController.java
 
+    @GetMapping
+    public ResponseEntity<?> getAllBookings() {
+        log.info("Fetching all bookings");
+
+        try {
+            List<Reservation> reservations = reservationRepository.findAll();
+
+            if (reservations.isEmpty()) {
+                log.info("No bookings found");
+                return ResponseEntity.ok(Collections.emptyList());
+            }
+
+            // Thêm thông tin số phòng và guest cho mỗi reservation
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (Reservation res : reservations) {
+                List<ReservationRoom> rooms = reservationRoomRepository.findByReservationId(res.getId());
+                List<Guest> guests = guestRepository.findByReservationId(res.getId());
+                Guest mainGuest = guests.isEmpty() ? null : guests.get(0);
+
+                // Tính số đêm
+                long nights = (res.getExpectedCheckOutDate().getTime() -
+                        res.getExpectedCheckInDate().getTime()) / (1000 * 60 * 60 * 24);
+
+                Map<String, Object> item = new HashMap<>();
+                item.put("id", res.getId());
+                item.put("reservationCode", res.getReservationCode());
+                item.put("hotelId", res.getHotelId());
+                item.put("customerId", res.getCustomerId());
+                item.put("guestName", mainGuest != null ? mainGuest.getFullName() : "N/A");
+                item.put("email", mainGuest != null ? mainGuest.getEmail() : "");
+                item.put("phone", mainGuest != null ? mainGuest.getPhone() : "");
+                item.put("expectedCheckInDate", res.getExpectedCheckInDate());
+                item.put("expectedCheckOutDate", res.getExpectedCheckOutDate());
+                item.put("totalAmount", res.getTotalAmount());
+                item.put("originalAmount", res.getOriginalAmount());
+                item.put("status", res.getStatus());
+                item.put("createdDate", res.getCreatedDate());
+                item.put("roomCount", rooms.size());
+                item.put("nights", nights);
+                item.put("voucherCode", res.getVoucherCode());
+                item.put("weekendDiscountApplied", res.getWeekendDiscountApplied());
+                item.put("weekendDiscountAmount", res.getWeekendDiscountAmount());
+                item.put("discountAmount", res.getDiscountAmount());
+
+                result.add(item);
+            }
+
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            log.error("Error fetching all bookings", e);
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Lỗi khi tải danh sách đặt phòng: " + e.getMessage()
+            ));
+        }
+    }
+    // Thêm method validateVoucher
+    private boolean validateVoucher(Voucher voucher, BigDecimal orderAmount) {
+        LocalDateTime now = LocalDateTime.now();
+
+        // Kiểm tra trạng thái
+        if (!"ACTIVE".equals(voucher.getStatus())) {
+            return false;
+        }
+
+        // Kiểm tra thời gian
+        if (voucher.getStartDate() != null && now.isBefore(voucher.getStartDate())) {
+            return false;
+        }
+        if (voucher.getEndDate() != null && now.isAfter(voucher.getEndDate())) {
+            return false;
+        }
+
+        // Kiểm tra số lần sử dụng
+        if (voucher.getUsageLimit() != null && voucher.getUsedCount() >= voucher.getUsageLimit()) {
+            return false;
+        }
+
+        // Kiểm tra giá trị đơn hàng tối thiểu
+        if (voucher.getMinOrderValue() != null &&
+                orderAmount.compareTo(BigDecimal.valueOf(voucher.getMinOrderValue())) < 0) {
+            return false;
+        }
+
+        return true;
+    }
+// Thêm vào BookingController.java
+
+    @GetMapping("/checkin/pending")
+    public ResponseEntity<?> getPendingCheckInsList() {
+        log.info("Fetching pending check-in reservations");
+
+        try {
+            // Lấy reservations có status = CONFIRMED (đã thanh toán) và chưa check-in
+            // Hoặc status = PENDING và ngày check-in gần
+            List<Reservation> pendingReservations = reservationRepository
+                    .findByStatusAndActualCheckInDateIsNull(ReservationStatus.CONFIRMED);
+
+            List<Map<String, Object>> result = new ArrayList<>();
+
+            for (Reservation res : pendingReservations) {
+                List<Guest> guests = guestRepository.findByReservationId(res.getId());
+                Guest mainGuest = guests.isEmpty() ? null : guests.get(0);
+
+                Map<String, Object> item = new HashMap<>();
+                item.put("id", res.getId());
+                item.put("reservationCode", res.getReservationCode());
+                item.put("guestName", mainGuest != null ? mainGuest.getFullName() : "N/A");
+                item.put("email", mainGuest != null ? mainGuest.getEmail() : "");
+                item.put("phone", mainGuest != null ? mainGuest.getPhone() : "");
+                item.put("arrivalDate", res.getExpectedCheckInDate());
+                item.put("departureDate", res.getExpectedCheckOutDate());
+                item.put("status", res.getStatus());
+
+                result.add(item);
+            }
+
+            return ResponseEntity.ok(result);
+
+        } catch (Exception e) {
+            log.error("Error fetching pending check-ins", e);
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Lỗi tải danh sách: " + e.getMessage()
+            ));
+        }
+    }
     @PutMapping("/{id}/check-in")
     public ResponseEntity<?> checkIn(@PathVariable Long id) {
         // 1. Tìm reservation
@@ -292,7 +504,6 @@ public class BookingController {
         return ResponseEntity.ok(response);
     }
 
-    // Sửa method getBookingsByCustomer trong BookingController.java
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<?> getBookingsByCustomer(@PathVariable Long customerId) {
         log.info("Fetching bookings for customer: {}", customerId);
@@ -723,4 +934,5 @@ public class BookingController {
         long diffInMillies = checkOut.getTime() - checkIn.getTime();
         return TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
     }
+    // Test method
 }

@@ -23,4 +23,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findByStatusAndExpectedCheckInDateGreaterThanEqual(
             @Param("status") ReservationStatus status,
             @Param("date") Date date);
+
+    List<Reservation> findByStatusAndActualCheckInDateIsNull(ReservationStatus status);
+
 }

@@ -1,22 +1,25 @@
 // src/main/java/com/mss301/bookingservice/dto/BookingResponseDTO.java
 package com.mss301.bookingservice.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 import java.util.List;
 
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class BookingResponseDTO {
     private Long reservationId;
     private String reservationCode;
     private String message;
     private BigDecimal totalAmount;
+    private BigDecimal originalAmount;
+    private Boolean weekendDiscountApplied;
+    private BigDecimal weekendDiscountAmount;
+    private BigDecimal discountAmount;
+    private String voucherCode;
+    private String voucherMessage;
     private Integer requiredRooms;
     private Integer totalAdults;
     private Integer totalChildren;
@@ -24,13 +27,19 @@ public class BookingResponseDTO {
     private Boolean isLoggedIn;
     private String customerEmail;
     private String customerName;
-    private GuestBookingInfoDTO guestInfo; // ĐỔI TÊN Ở ĐÂY
+    private GuestBookingInfoDTO guestInfo;
     private List<RoomAllocationDTO> roomAllocations;
 
     @Data
     @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
+    public static class GuestBookingInfoDTO {
+        private String fullName;
+        private String email;
+        private String phone;
+    }
+
+    @Data
+    @Builder
     public static class RoomAllocationDTO {
         private Integer roomNumber;
         private Long roomId;
@@ -38,16 +47,5 @@ public class BookingResponseDTO {
         private Integer adultCount;
         private Integer childCount;
         private BigDecimal price;
-    }
-
-    @Data
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class GuestBookingInfoDTO { // ĐỔI TÊN INNER CLASS
-        private String fullName;
-        private String email;
-        private String phone;
-        // Chỉ lấy 3 thông tin cơ bản cho response
     }
 }

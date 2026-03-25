@@ -1,29 +1,36 @@
 // src/main/java/com/mss301/bookingservice/dto/BookingRequestDTO.java
 package com.mss301.bookingservice.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class BookingRequestDTO {
     private Long hotelId;
     private Long roomTypeId;
     private Date expectedCheckInDate;
     private Date expectedCheckOutDate;
     private String note;
-    private GuestDTO guest; // Thông tin người đặt phòng
-    private List<RoomOccupancy> rooms; // Thông tin các phòng
+    private String voucherCode;
+    private Long customerId;  // Thêm trường này để nhận từ frontend
+    private List<RoomOccupancy> rooms;
+    private GuestInfo guest;
 
     @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class RoomOccupancy {
         private Integer adultCount;
         private Integer childCount;
+    }
+
+    @Data
+    public static class GuestInfo {
+        private String fullName;
+        private String email;
+        private String phone;
+        private String nationality;
+        private String documentType;
+        private String documentNumber;
     }
 }

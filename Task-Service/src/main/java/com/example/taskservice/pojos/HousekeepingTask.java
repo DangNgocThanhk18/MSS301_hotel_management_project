@@ -1,3 +1,4 @@
+// src/main/java/com/example/taskservice/pojos/HousekeepingTask.java
 package com.example.taskservice.pojos;
 
 import com.example.taskservice.enums.TaskStatus;
@@ -16,11 +17,12 @@ public class HousekeepingTask {
     private Long id;
 
     private Long roomId;
+    private String roomNumber;  // Thêm trường này
     private Long assignedTo;
     private Long reservationId;
 
-    private String type;     // Loại công việc (VD: Dọn phòng hằng ngày, Dọn sau Check-out)
-    private String priority; // Độ ưu tiên (VD: NORMAL, HIGH)
+    private String type;     // Loại công việc
+    private String priority; // Độ ưu tiên
 
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
@@ -30,4 +32,6 @@ public class HousekeepingTask {
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime startedAt;
+    private LocalDateTime completedAt;
 }
